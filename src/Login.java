@@ -1,6 +1,8 @@
 
-import com.mysql.cj.jdbc.Driver;
-import com.sun.jdi.connect.spi.Connection;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import javax.swing.JOptionPane;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -107,35 +109,27 @@ public class Login extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        String url_db = "jdbc:mysql//localhost:3306/library?userSSL=false";
-        String user_db = "root";
-        String password_db = "";
-        String user_faild = username1.getText();
-        String pasword_faild = new String(password.getText());
+        String user_faild = username1.getText().trim();
+        String pasword_faild = password.getText();
+        String sql = "SELECT admin_id FROM admin WHERE admin_name = ? AND admin_password = ?";
 
+        try (Connection con_db = DB.connect();
+             PreparedStatement stm = con_db.prepareStatement(sql)) {
+            stm.setString(1, user_faild);
+            stm.setString(2, pasword_faild);
+            try (ResultSet rs = stm.executeQuery()) {
+                if (rs.next()) {
                     dashbord ds = new dashbord();
                     ds.setVisible(true);
-        String Sql = "SELECT admin_name , admin_password FROM admin WHERE admin_name='" + user_faild + "' AND admin_password='" + pasword_faild + "'; ";
-//        
-//        try {
-//            Connection con_db = DriverManger.getConnection(url_db, user_db, password_db);
-//            Statment stm = con_db.createStatment();
-//            Resultest rs = stm.executeQuery(Sql) //True or false 
-//            if (rs.next()) {
-//                String paswd = rs.getString("admin_password") // column name 
-//                if (rs.equals(paswd)) {
-//                    dashbord ds = new dashbord();
-//                    ds.setVisible(true);
-//                    //this will close the login page 
-//                    this.dispose();
-//
-//                } else {
-//                    System.err.println("Eror IN  CONACTION ");
-//                }
-//            }
-//        } catch (Exception e) {
-//            System.out.println(e);
-//        }
+                    // close the login page
+                    this.dispose();
+                } else {
+                    JOptionPane.showMessageDialog(this, "Wrong user name or password");
+                }
+            }
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Database error: " + e.getMessage());
+        }
 
     }//GEN-LAST:event_jButton1ActionPerformed
 

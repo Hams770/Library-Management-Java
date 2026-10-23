@@ -1,6 +1,7 @@
 
-import com.mysql.cj.jdbc.PreparedStatementWrapper;
-import com.sun.jdi.connect.spi.Connection;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import javax.swing.JOptionPane;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -13,6 +14,9 @@ public class DELETE_BOOK extends javax.swing.JFrame {
      */
     public DELETE_BOOK() {
         initComponents();
+        // close only this window, not the whole application
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setLocationRelativeTo(null);
     }
 
     /**
@@ -93,22 +97,21 @@ public class DELETE_BOOK extends javax.swing.JFrame {
 
     private void DELETE_BOOKActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_DELETE_BOOKActionPerformed
         // TODO add your handling code here:
-        String url_db = "jdbc:mysql//localhost:3306/library";
-        String user_db = "root";
-        String password_db = "";
-        String input = book_name.getText(); // lable in the disgin
-        String sql = "DELETE FROM book WHERE book_title='"+input+"'";
+        String input = book_name.getText().trim(); // text field in the design
+        String sql = "DELETE FROM book WHERE book_title = ?";
 
-        try {
-            Connection con_db = DriverManger.getConnection(url_db, user_db, password_db);
-            Statment stm = con_db.createStatment();
-            stm.excuteUpdate();
-            //setString(columNnnember , value )
-            stm.setInt(1, id);
-            stm.execute();
-            System.out.println("DELETE sucsfuliy ");
-
+        try (Connection con_db = DB.connect();
+             PreparedStatement stm = con_db.prepareStatement(sql)) {
+            stm.setString(1, input);
+            int rows = stm.executeUpdate();
+            if (rows > 0) {
+                JOptionPane.showMessageDialog(this, "Book deleted successfully");
+                book_name.setText("");
+            } else {
+                JOptionPane.showMessageDialog(this, "No book found with that name");
+            }
         } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Database error: " + e.getMessage());
         }
     }//GEN-LAST:event_DELETE_BOOKActionPerformed
 

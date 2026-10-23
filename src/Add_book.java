@@ -1,7 +1,7 @@
 
-import com.mysql.cj.jdbc.Driver;
-import com.mysql.cj.jdbc.PreparedStatementWrapper;
-import com.sun.jdi.connect.spi.Connection;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import javax.swing.JOptionPane;
 
 /*
  * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
@@ -18,6 +18,9 @@ public class Add_book extends javax.swing.JFrame {
      */
     public Add_book() {
         initComponents();
+        // close only this window, not the whole application
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setLocationRelativeTo(null);
     }
 
     /**
@@ -154,27 +157,39 @@ public class Add_book extends javax.swing.JFrame {
 
     private void Add_new_bookActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_Add_new_bookActionPerformed
         // TODO add your handling code here:
-        String url_db = "jdbc:mysql//localhost:3306/library";
-        String user_db = "root";
-        String password_db = "";
-        String sql = "insert into books('book_title','book_auther','book_available') value (?,?,?)";
-        int id = Integer.parseInt(add_book_ID.getText());
-        String book_titel = add_book_title.getText();
-        String book_auther = add_book_auther.getText();
-        boolean book_av = Boolean.parseBoolean(add_book_available.getText());
-        try {
-            Connection con_db = DriverManger.getConnection(url_db, user_db, password_db);
-            Statment stm = con_db.createStatment();
-            PreparedStatementWrapper stm = con_db.prepareCall(sql);
-//            setString(columNnnember , value )
-            stm.setInt(1, id);
+        String sql = "INSERT INTO book (book_id, book_title, book_auther, book_available) VALUES (?, ?, ?, ?)";
+        String book_titel = add_book_title.getText().trim();
+        String book_auther = add_book_auther.getText().trim();
+        String available = add_book_available.getText().trim().toLowerCase();
+        boolean book_av = available.equals("1") || available.equals("true") || available.equals("yes");
+
+        if (book_titel.isEmpty() || book_auther.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter the book title and author");
+            return;
+        }
+
+        try (Connection con_db = DB.connect();
+             PreparedStatement stm = con_db.prepareStatement(sql)) {
+            // empty ID -> let MySQL generate it (AUTO_INCREMENT)
+            String idText = add_book_ID.getText().trim();
+            if (idText.isEmpty()) {
+                stm.setNull(1, java.sql.Types.INTEGER);
+            } else {
+                stm.setInt(1, Integer.parseInt(idText));
+            }
             stm.setString(2, book_titel);
             stm.setString(3, book_auther);
             stm.setBoolean(4, book_av);
-            stm.execute();
-            System.out.println("Add sucsfuliy ");            
-            
+            stm.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Book added successfully");
+            add_book_ID.setText("");
+            add_book_title.setText("");
+            add_book_auther.setText("");
+            add_book_available.setText("");
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Book ID must be a number");
         } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Database error: " + e.getMessage());
         }
 
 

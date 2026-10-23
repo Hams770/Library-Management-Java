@@ -1,7 +1,9 @@
 
-import com.mysql.cj.xdevapi.Table;
-import com.sun.jdi.connect.spi.Connection;
-import javax.management.modelmbean.ModelMBean;
+import java.sql.Connection;
+import java.sql.ResultSet;
+import java.sql.Statement;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
 
 
 
@@ -9,6 +11,9 @@ public class Avaiblebook extends javax.swing.JFrame {
 
     public Avaiblebook() {
         initComponents();
+        // close only this window, not the whole application
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setLocationRelativeTo(null);
     }
 
     /**
@@ -138,28 +143,22 @@ public class Avaiblebook extends javax.swing.JFrame {
 
     private void fichActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_fichActionPerformed
         // TODO add your handling code here:
-        jTable1 table = jTable1.getModel();
-        String url_db = "jdbc:mysql//localhost:3306/library";
-        String user_db = "root";
-        String password_db = "";
-        String sql = "SELECT * FROM BOOK";  
-        try {
-            Connection con_db = DriverManger.getConnection(url_db, user_db, password_db);
-            Statment stm = con_db.createStatment();
-            Resultest rs = stm.executeQuery(Sql); //True or false 
-           while(rs.next()) {
-                String book_isbn = rs.getString("book_isbn"); // column name 
-                String book_title = rs.getString("book_title"); // column name 
-                String book_auther = rs.getString("book_auther"); // column name 
-                String book_available = rs.getString("book_available"); // column name 
-//                add the new row in the table 
-                table.addRow(new Object[] {book_isbn ,book_title,book_auther,book_available});                     
+        DefaultTableModel table = (DefaultTableModel) jTable1.getModel();
+        table.setRowCount(0); // clear old rows before loading
+        String sql = "SELECT book_id, book_title, book_auther, book_available FROM book";
+        try (Connection con_db = DB.connect();
+             Statement stm = con_db.createStatement();
+             ResultSet rs = stm.executeQuery(sql)) {
+            while (rs.next()) {
+                Integer book_id = rs.getInt("book_id"); // column name
+                String book_title = rs.getString("book_title"); // column name
+                String book_auther = rs.getString("book_auther"); // column name
+                Integer book_available = rs.getInt("book_available"); // 1 = available, 0 = borrowed
+                // add the new row in the table
+                table.addRow(new Object[] {book_id, book_title, book_auther, book_available});
             }
-           rs.close();
-           stm.close();
-           
         } catch (Exception e) {
-            System.out.println(e);
+            JOptionPane.showMessageDialog(this, "Database error: " + e.getMessage());
         }
     }//GEN-LAST:event_fichActionPerformed
 

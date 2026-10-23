@@ -65,7 +65,7 @@
           <Color blue="ff" green="ff" red="ff" type="rgb"/>
         </Property>
         <Property name="horizontalAlignment" type="int" value="0"/>
-        <Property name="text" type="java.lang.String" value="Name of book to DELETE "/>
+        <Property name="text" type="java.lang.String" value="Name of patron to DELETE "/>
       </Properties>
     </Component>
     <Component class="javax.swing.JTextField" name="book_name">

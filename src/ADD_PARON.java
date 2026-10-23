@@ -3,6 +3,9 @@
  * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
  */
 
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import javax.swing.JOptionPane;
 
 public class ADD_PARON extends javax.swing.JFrame {
 
@@ -11,6 +14,9 @@ public class ADD_PARON extends javax.swing.JFrame {
      */
     public ADD_PARON() {
         initComponents();
+        // close only this window, not the whole application
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setLocationRelativeTo(null);
     }
 
     /**
@@ -30,7 +36,6 @@ public class ADD_PARON extends javax.swing.JFrame {
         menu4 = new java.awt.Menu();
         textField1 = new java.awt.TextField();
         jToolBar1 = new javax.swing.JToolBar();
-        jSpinField1 = new com.toedter.components.JSpinField();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
         jLabel3 = new javax.swing.JLabel();
@@ -206,8 +211,44 @@ public class ADD_PARON extends javax.swing.JFrame {
 
     private void jButton5ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton5ActionPerformed
         // TODO add your handling code here:
-        Add_book Add_book = new Add_book();
-        Add_book.setVisible(true);
+        // field order on screen: ID, NAME, PASSWORD, PHONE
+        String idText = add_book_ID1.getText().trim();
+        String name = add_book_ID3.getText().trim();
+        String pass = add_book_ID5.getText();
+        String phone = add_book_ID4.getText().trim();
+
+        if (name.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Please enter the patron name");
+            return;
+        }
+
+        String sql = "INSERT INTO patron (PATRON_ID, PATRON_NAME, PATRON_PASSWORD, PATRON_PHONE) VALUES (?, ?, ?, ?)";
+        try (Connection con_db = DB.connect();
+             PreparedStatement stm = con_db.prepareStatement(sql)) {
+            // empty ID -> let MySQL generate it (AUTO_INCREMENT)
+            if (idText.isEmpty()) {
+                stm.setNull(1, java.sql.Types.INTEGER);
+            } else {
+                stm.setInt(1, Integer.parseInt(idText));
+            }
+            stm.setString(2, name);
+            stm.setString(3, pass);
+            if (phone.isEmpty()) {
+                stm.setNull(4, java.sql.Types.INTEGER);
+            } else {
+                stm.setInt(4, Integer.parseInt(phone));
+            }
+            stm.executeUpdate();
+            JOptionPane.showMessageDialog(this, "Patron added successfully");
+            add_book_ID1.setText("");
+            add_book_ID3.setText("");
+            add_book_ID5.setText("");
+            add_book_ID4.setText("");
+        } catch (NumberFormatException e) {
+            JOptionPane.showMessageDialog(this, "Patron ID and phone must be numbers");
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(this, "Database error: " + e.getMessage());
+        }
 
     }//GEN-LAST:event_jButton5ActionPerformed
 
@@ -265,7 +306,6 @@ public class ADD_PARON extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
     private javax.swing.JLabel jLabel6;
-    private com.toedter.components.JSpinField jSpinField1;
     private javax.swing.JToolBar jToolBar1;
     private java.awt.Menu menu1;
     private java.awt.Menu menu2;
