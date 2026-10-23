@@ -1,0 +1,12 @@
+# NetBeans / build output
+build/
+dist/
+nbproject/private/
+
+# Dependencies (download, see README)
+lib/*.jar
+
+# Office lock files / OS
+~$*
+.DS_Store
+Thumbs.db
